@@ -1,0 +1,111 @@
+<html>
+	<head>
+		<title>cors example test</title>
+	</head>
+	<body>
+		<div class="get-response"></div><br>
+		<div class="post-response"></div><br>
+		<div class="put-response"></div><br>
+		<div class="delete-response"></div><br>
+
+	<script src="./lib/jquery-2.0.2.js"></script>
+
+	<script type="text/javascript">
+		$(function() {
+			console.log('jquery ready');
+
+			var url = "http://adspiciens.com:8081/place";
+
+			var id;
+
+			var placeObject = {
+				name: 'Test Place 1',
+				latitude: 39.168128,
+				longitude: -76.80947,
+				radius:0.25
+			};
+
+			var getCall = function(outputSelector, nextCall) {
+				$.ajax({
+					type: "GET",
+					url: url,
+					dataType: 'jsonp',
+					jsonpCallback: 'callback',
+					success: function(data, textStatus, xhr) {
+						console.log(data);
+						$(outputSelector).append('<p>'+JSON.stringify(data)+'</p>');
+						nextCall();
+					},
+					error: function(xhr, textStatus, err) {
+						console.log(xhr.responseText);
+						console.log(err);
+					}
+				});
+			};
+
+			var postCall = function() {
+				$.ajax({
+					type: "POST",
+					crossDomain: true,
+					url: url,
+					contentType: 'application/json',
+					data: JSON.stringify(placeObject),
+					success: function(data, textStatus, xhr) {
+						console.log(data);
+						id = data._id;
+						$('.post-response').append('<p>'+JSON.stringify(data)+'</p>');
+						getCall('.post-response', putCall)
+					},
+					error: function(xhr, textStatus, err) {
+						console.log(err);
+						console.log(xhr.responseText);
+					}
+				});
+			};
+
+			var putCall = function() {
+				placeObject.name = "test 2";
+				$.ajax({
+					type: "PUT",
+					crossDomain: true,
+					url: url + "/" + id,
+					contentType: 'application/json',
+					data: JSON.stringify(placeObject),
+					success: function(data, textStatus, xhr) {
+						console.log(data);
+						$('.put-response').append('<p>'+JSON.stringify(data)+'</p>');
+						getCall('.put-response', deleteCall);
+					},
+					error: function(xhr, textStatus, err) {
+						console.log(err);
+						console.log(xhr.responseText);
+					}
+				});
+			}
+
+			var deleteCall = function() {
+				$.ajax({
+					type: "DELETE",
+					crossDomain: true,
+					url: url + "/" + id,
+					contentType: 'application/json',
+					data: JSON.stringify(placeObject),
+					success: function(data, textStatus, xhr) {
+						console.log(data);
+						$('.delete-response').append('<p>Delete Success</p>');
+						getCall('.delete-response', $.noop);
+					},
+					error: function(xhr, textStatus, err) {
+						console.log(err);
+						console.log(xhr.responseText);
+					}
+				});
+			};
+
+			getCall('.get-response', postCall);
+
+
+		});
+	</script>
+	</body>
+</html>
